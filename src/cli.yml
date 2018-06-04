@@ -1,0 +1,65 @@
+name: tn5tools
+version: "0.0.9999"
+author: Matt L. <matt.a.lawlor@gmail.com>
+about: Toolkit for some ATAC-seq problems
+subcommands:
+    - counts:
+        about: counts 5` transposition sites
+        version: "0.0.9999"
+        args:
+            - BED:
+                value_name: BED
+                help: Provide a path to a .bed file
+                required: true
+                index: 1
+            - BAMS:
+                value_name: BAMS
+                help: Provide paths to .bam files (must be indexed)
+                required: true
+                index: 2
+                multiple: true
+    - frags:
+        about: finds all fragment sized within each region
+        version: "0.0.9999"
+        args:
+            - BED:
+                value_name: BED
+                help: Provide a path to a .bed file
+                required: true
+                index: 1
+            - BAMS:
+                value_name: BAMS
+                help: Provide paths to .bam files (must be indexed)
+                required: true
+                index: 2
+                multiple: true
+    - profile:
+        about: get average profile of a set of regions
+        version: "0.0.9999"
+        args:
+            - BED:
+                value_name: BED
+                help: Provide a path to a .bed file
+                required: true
+                index: 1
+            - BAMS:
+                value_name: BAMS
+                help: Provide paths to .bam files (must be indexed)
+                required: true
+                index: 2
+                multiple: true
+    - vplot:
+        about: get vplot for a set of regions
+        version: "0.0.9999"
+        args:
+            - BED:
+                value_name: BED
+                help: Provide a path to a .bed file
+                required: true
+                index: 1
+            - BAMS:
+                value_name: BAMS
+                help: Provide paths to .bam files (must be indexed)
+                required: true
+                index: 2
+                multiple: true

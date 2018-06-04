@@ -1,0 +1,11 @@
+[package]
+name = "tn5tools"
+version = "0.1.0"
+authors = ["mattlawlor <matt.a.lawlor@gmail.com>"]
+
+[dependencies]
+clap = {version = "~2.27.0", features = ["yaml"]}
+bio = "*"
+indicatif = "*"
+rust-htslib = "*"
+rayon = "1.0"
