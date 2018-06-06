@@ -4,6 +4,7 @@ extern crate tn5tools;
 extern crate rust_htslib;
 extern crate rayon;
 extern crate indicatif;
+extern crate csv;
 
 fn main() {
 	use clap::App;
