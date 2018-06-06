@@ -18,6 +18,10 @@ subcommands:
                 required: true
                 index: 2
                 multiple: true
+            - threads:
+                short: p
+                value_name: threads
+
     - frags:
         about: finds all fragment sized within each region
         version: "0.0.9999"
