@@ -23,7 +23,7 @@ subcommands:
                 value_name: threads
 
     - frags:
-        about: finds all fragment sized within each region
+        about: finds all fragment sizes within each region
         version: "0.0.9999"
         args:
             - BED:
