@@ -8,15 +8,21 @@ use rust_htslib::bam;
 use rust_htslib::sam;
 use rust_htslib::prelude::*;
 
-pub fn get_reads_in_region(idxr: &mut IndexedReader) {
+pub fn get_reads_in_region(idxr: &Arc<Mutex<IndexedReader>>) {
+	// &mut IndexedReader
+
 	let chrom_as_bytes = "chr4".as_bytes();
+
+	let mut idxr = idxr.lock().unwrap();
+	
 	let tid = idxr.header().tid(chrom_as_bytes).unwrap();
 	idxr.fetch(tid, 45500, 50000);
 	let mut rec = Record::new();
-
+	
 	while let Ok(r) = idxr.read(&mut rec) {
 		println!("{:?}", rec);
 	}
+	
 }
 
 // -> bam::Records<'_,IndexedReader>

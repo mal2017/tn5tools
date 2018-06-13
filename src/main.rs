@@ -52,7 +52,7 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 									  .map(|a| expand_region(a, -4, 5))
 					                  .collect();
 
-    let mut idxr = IndexedReader::from_path(bams[0]).unwrap();
+    let mut idxr = Arc::new(Mutex::new(IndexedReader::from_path(bams[0]).unwrap()));
 
 
     ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
@@ -62,13 +62,13 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
 
 
-    let recs2 = recs.into_iter()
-    				.for_each(|a| count::get_reads_in_region(&mut idxr));
+    let recs2 = recs.into_par_iter()
+    				.for_each(|a| count::get_reads_in_region(&idxr));
 
 
 
-	/*ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
-	for bam in bams {
+
+	/*for bam in bams {
 		let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
 
 		let counter = regions.par_iter()
