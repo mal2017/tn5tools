@@ -4,6 +4,8 @@ extern crate tn5tools;
 extern crate rust_htslib;
 extern crate rayon;
 extern crate indicatif;
+extern crate bio;
+
 extern crate csv;
 
 fn main() {
@@ -27,15 +29,46 @@ fn main() {
 fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use rayon::prelude::*;
 	use rust_htslib::bam::IndexedReader;
+	use rust_htslib::bam;
 	use tn5tools::regions::get_reads_in_region;
+	use tn5tools::regions::expand_region;
 	use tn5tools::regions;
+	use tn5tools::count;
 	use indicatif::{ProgressBar, HumanDuration};
 	use std::sync::{Arc, Mutex};
 	use rayon::ThreadPoolBuilder;
-	let regions = regions::bed_as_strings(bed_path);
+	use bio::io::bed;
+	use bio::io::bed::Records;
+	use bio::io::bed::Reader;
+	use std::fs;
+	use std::time::Instant;
 
-	let n_regions = regions.len() as u64;
-	ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
+	let mut reader = bed::Reader::from_file(bed_path).unwrap();
+
+
+	// vector of regions with expanded coords
+	let recs: Vec<bed::Record> = reader.records()
+									  .map(|a| a.unwrap())
+									  .map(|a| expand_region(a, -4, 5))
+					                  .collect();
+
+    let mut idxr = IndexedReader::from_path(bams[0]).unwrap();
+
+
+    ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
+
+
+
+
+
+
+    let recs2 = recs.into_iter().for_each(|a| count::get_reads_in_region(&mut idxr));
+
+    //let x: IndexedReader = count::make_idx_bam_reader(bams[0]);
+
+
+
+	/*ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 	for bam in bams {
 		let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
 
@@ -46,7 +79,7 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
 		let counts: Vec<u32> = counter.collect();
 		pb.lock().unwrap().finish_with_message("Done");   
-    }
+    }*/
     
 }
 

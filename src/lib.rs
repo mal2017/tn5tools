@@ -1,17 +1,13 @@
 extern crate bio;
 extern crate indicatif;
 extern crate rust_htslib;
+extern crate csv;
 
 
-
-// for pulling regions from bam
+// for pulling regions from bed
 use rust_htslib::bam::IndexedReader;
 pub mod regions;
 
-
-// for shifting reads in iterator
-//pub mod shift;
-
-// pub mod count
+pub mod count;
 
 // pub mod sizes
