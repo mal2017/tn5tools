@@ -14,7 +14,7 @@ use bio;
 pub fn expand_region(mut r: bio::io::bed::Record,
 	start_shift: i64, end_shift: i64) -> bio::io::bed::Record {
 	let new_start = r.start() as i64 + start_shift;
-	let new_end = r.start() as i64 + end_shift;
+	let new_end = r.end() as i64 + end_shift;
 	r.set_start(new_start as u64);
 	r.set_end(new_end as u64);
 	r
@@ -56,7 +56,7 @@ pub fn bed_as_strings(bf: &str) -> Vec<(String, u32, u32)> {
 	regions_unwrapped
 }
 
-pub fn get_reads_in_region(bam: &str, chrom: &str, start: &u32, end: &u32) -> u32 {
+pub fn get_reads_in_region(bam: &str, chrom: &str, start: &u64, end: &u64) -> u32 {
 	use rust_htslib::bam;
 	use rust_htslib::sam;
 	use rust_htslib::prelude::*;
@@ -68,7 +68,7 @@ pub fn get_reads_in_region(bam: &str, chrom: &str, start: &u32, end: &u32) -> u3
 	let chrom_as_bytes = chrom.as_bytes();
 	let tid = idxr.header().tid(chrom_as_bytes).unwrap();
 
-	idxr.fetch(tid, *start -5 , *end + 5 );
+	idxr.fetch(tid, *start as u32 -5 , *end as u32 + 5 );
 
 	let mut count = 0;
 	for s in idxr.records() {
@@ -80,7 +80,7 @@ pub fn get_reads_in_region(bam: &str, chrom: &str, start: &u32, end: &u32) -> u3
 			record.pos() + 1 + 4 // bam is 0based beds, then plus 4 for shift
 		} as u32;
 
-		if pos >= *start && pos <= *end {
+		if pos >= *start as u32 && pos <= *end as u32 {
 			count += 1; // remember to write a condition here, just a test for now.
 		}
 	}

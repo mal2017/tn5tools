@@ -57,16 +57,13 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
     ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 
+    let recs2: Vec<u32> = recs.into_par_iter()
+    						  .map(|a| count::get_reads_in_region(&idxr, &a))
+    						  .collect();
+    				//
+    				
 
-
-
-
-
-    let recs2 = recs.into_par_iter()
-    				.for_each(|a| count::get_reads_in_region(&idxr));
-
-
-
+    println!("{:?}", recs2);
 
 	/*for bam in bams {
 		let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
