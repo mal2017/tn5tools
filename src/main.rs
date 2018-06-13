@@ -62,9 +62,8 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
 
 
-    let recs2 = recs.into_iter().for_each(|a| count::get_reads_in_region(&mut idxr));
-
-    //let x: IndexedReader = count::make_idx_bam_reader(bams[0]);
+    let recs2 = recs.into_iter()
+    				.for_each(|a| count::get_reads_in_region(&mut idxr));
 
 
 
