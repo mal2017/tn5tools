@@ -46,7 +46,7 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use rust_htslib::bam;
 	use super::regions::expand_region;
 	use super::regions;
-	use indicatif::{ProgressBar, HumanDuration};
+	use indicatif::{ProgressBar, HumanDuration, ProgressStyle};
 	use std::sync::{Arc, Mutex};
 	use rayon::ThreadPoolBuilder;
 	use std::io;
@@ -70,28 +70,32 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
     ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 
-    let n_row = recs.len();
+    let n_row = recs.len() as u64;
 
-    let n_col = bams.len();
+    let n_col = bams.len() as u64;
 
     let mut cuts_vec: Vec<u32> = Vec::new();
 
 	for bam in bams {
 
-		//let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
+		let pb = ProgressBar::new(n_row);
+
+		pb.set_style(ProgressStyle::default_bar()
+    	  .template("[{eta_precise}] {bar:40.red/blue} {pos:>7}/{len:7} {msg}")
+    	  .progress_chars("$$-"));
 
 		let idxr = Arc::new(Mutex::new(IndexedReader::from_path(bam).unwrap()));
 
 		let cuts: Vec<u32> = recs.par_iter()
-    						  .map(|a| get_count_in_region(&idxr, &a))
+    						  .map(|a| { pb.inc(1); get_count_in_region(&idxr, &a)})
     						  .collect();
 
     	cuts_vec.extend(cuts);
 
-		//pb.lock().unwrap().finish_with_message("Done");   
+		pb.finish_with_message("Cash Money!!");   
     }
 
-    let arr = Array::from_shape_vec((n_col,n_row), cuts_vec).unwrap()
+    let arr = Array::from_shape_vec((n_col as usize, n_row as usize), cuts_vec).unwrap()
     														.reversed_axes();
 
 
