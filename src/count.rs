@@ -46,7 +46,7 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use rust_htslib::bam;
 	use super::regions::expand_region;
 	use super::regions;
-	use indicatif::{ProgressBar, HumanDuration, ProgressStyle};
+	use indicatif::{ProgressBar, HumanDuration, ProgressStyle, MultiProgress};
 	use std::sync::{Arc, Mutex};
 	use rayon::ThreadPoolBuilder;
 	use rayon::iter;
@@ -69,14 +69,16 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 									  .map(|a| expand_region(a, -5, 5)) // 5 both sides
 					                  .collect();
 
-    ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
+    
 
     let n_row = recs.len() as u64;
 
     let n_col = bams.len() as u64;
 
+    ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
     
     //------------------------------------	
+    
     // BASIC PARALLEL VERSION
     /*let mut cuts_vec: Vec<u32> = Vec::new();
 
@@ -103,25 +105,30 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     														.reversed_axes();*/
 
     //------------------------------------	
-    // MEGA PARALLEL													
+    // MEGA PARALLEL	
+    let pb = ProgressBar::new(n_row * n_col);
+
+	pb.set_style(ProgressStyle::default_bar()
+    	  .template("Counting transposition events... {bar:40.blue/red} {percent}% {msg}")
+    	  .progress_chars("##-"));
+
+
+   	let pbs: Vec<ProgressBar> = bams.iter().map(|a| ProgressBar::new(n_row)).collect();
     
     let mut cuts_vec: Vec<Vec<u32>> = bams.par_iter().map(|bam| {
 
-		let pb = ProgressBar::new(n_row);
-
-		pb.set_style(ProgressStyle::default_bar()
-    	  .template("[{eta_precise}] {bar:40.red/blue} {pos:>7}/{len:7} {msg}")
-    	  .progress_chars("$$-"));
-
+	
 		let idxr = Arc::new(Mutex::new(IndexedReader::from_path(bam).unwrap()));
 
 		let mut cuts: Vec<u32> = recs.par_iter()
     						.map(|a| { pb.inc(1); get_count_in_region(&idxr, &a)})
     						.collect();
-		pb.finish_with_message("Cash Money!!");   
+		
 
 		cuts
     }).collect();
+    pb.finish_with_message("Complete.");
+
 
     let cuts_vec_flat: Vec<u32> = cuts_vec.iter()
     				  .flat_map(|a| a.iter())
