@@ -49,6 +49,7 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use indicatif::{ProgressBar, HumanDuration, ProgressStyle};
 	use std::sync::{Arc, Mutex};
 	use rayon::ThreadPoolBuilder;
+	use rayon::iter;
 	use std::io;
 	use bio::io::bed;
 	use bio::io::bed::Records;
@@ -74,7 +75,10 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
     let n_col = bams.len() as u64;
 
-    let mut cuts_vec: Vec<u32> = Vec::new();
+    
+    //------------------------------------	
+    // BASIC PARALLEL VERSION
+    /*let mut cuts_vec: Vec<u32> = Vec::new();
 
 	for bam in bams {
 
@@ -96,7 +100,39 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     }
 
     let arr = Array::from_shape_vec((n_col as usize, n_row as usize), cuts_vec).unwrap()
+    														.reversed_axes();*/
+
+    //------------------------------------	
+    // MEGA PARALLEL													
+    
+    let mut cuts_vec: Vec<Vec<u32>> = bams.par_iter().map(|bam| {
+
+		let pb = ProgressBar::new(n_row);
+
+		pb.set_style(ProgressStyle::default_bar()
+    	  .template("[{eta_precise}] {bar:40.red/blue} {pos:>7}/{len:7} {msg}")
+    	  .progress_chars("$$-"));
+
+		let idxr = Arc::new(Mutex::new(IndexedReader::from_path(bam).unwrap()));
+
+		let mut cuts: Vec<u32> = recs.par_iter()
+    						.map(|a| { pb.inc(1); get_count_in_region(&idxr, &a)})
+    						.collect();
+		pb.finish_with_message("Cash Money!!");   
+
+		cuts
+    }).collect();
+
+    let cuts_vec_flat: Vec<u32> = cuts_vec.iter()
+    				  .flat_map(|a| a.iter())
+    				  .cloned()
+    				  .collect();
+
+
+    let arr = Array::from_shape_vec((n_col as usize, n_row as usize), cuts_vec_flat).unwrap()
     														.reversed_axes();
+	
+    //------------------------------------
 
 
     let mut csv_header = vec!["region"];
