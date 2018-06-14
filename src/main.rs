@@ -4,9 +4,17 @@ extern crate tn5tools;
 extern crate rust_htslib;
 extern crate rayon;
 extern crate indicatif;
+extern crate serde;
 extern crate bio;
+#[macro_use(s)]
+extern crate ndarray;
+
+#[macro_use]
+extern crate utah;
 
 extern crate csv;
+
+use utah::prelude::*;
 
 fn main() {
 	use clap::App;
@@ -30,53 +38,82 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use rayon::prelude::*;
 	use rust_htslib::bam::IndexedReader;
 	use rust_htslib::bam;
-	use tn5tools::regions::get_reads_in_region;
 	use tn5tools::regions::expand_region;
 	use tn5tools::regions;
 	use tn5tools::count;
 	use indicatif::{ProgressBar, HumanDuration};
 	use std::sync::{Arc, Mutex};
 	use rayon::ThreadPoolBuilder;
+	use std::io;
 	use bio::io::bed;
 	use bio::io::bed::Records;
 	use bio::io::bed::Reader;
 	use std::fs;
 	use std::time::Instant;
+	use ndarray;
+	use ndarray::prelude::*;
+	use serde::ser::{Serialize, Serializer, SerializeStruct};
+
 
 	let mut reader = bed::Reader::from_file(bed_path).unwrap();
-
 
 	// vector of regions with expanded coords
 	let recs: Vec<bed::Record> = reader.records()
 									  .map(|a| a.unwrap())
-									  .map(|a| expand_region(a, -4, 5))
+									  .map(|a| expand_region(a, -5, 5)) // 5 both sides
 					                  .collect();
 
-    let mut idxr = Arc::new(Mutex::new(IndexedReader::from_path(bams[0]).unwrap()));
+
+
 
 
     ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 
-    let recs2: Vec<u32> = recs.into_par_iter()
-    						  .map(|a| count::get_reads_in_region(&idxr, &a))
+    let n_row = recs.len();
+
+    let n_col = bams.len();
+
+    let mut cuts_vec: Vec<u32> = Vec::new();
+
+	for bam in bams {
+
+		//let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
+
+		let idxr = Arc::new(Mutex::new(IndexedReader::from_path(bam).unwrap()));
+
+		let cuts: Vec<u32> = recs.par_iter()
+    						  .map(|a| count::get_count_in_region(&idxr, &a))
     						  .collect();
-    				//
-    				
 
-    println!("{:?}", recs2);
+    	cuts_vec.extend(cuts);
 
-	/*for bam in bams {
-		let pb = Arc::new(Mutex::new(ProgressBar::new(n_regions)));
+		//pb.lock().unwrap().finish_with_message("Done");   
+    }
 
-		let counter = regions.par_iter()
-							 .map(|x| {		 	
-							 	get_reads_in_region(bam, &x.0, &x.1, &x.2)
-							 });
+    let arr = Array::from_shape_vec((n_col,n_row), cuts_vec).unwrap()
+    														.reversed_axes();
 
-		let counts: Vec<u32> = counter.collect();
-		pb.lock().unwrap().finish_with_message("Done");   
-    }*/
+
+    let mut csv_header = vec!["region"];
+
+    csv_header.append(&mut bams.clone());
+
+    let mut wtr = csv::Writer::from_writer(io::stdout());
     
+    wtr.write_record(&csv_header);
+
+    
+
+    for i in 0..recs.len() {
+    	//println!("{}", regions::region_as_string(&recs[i]));
+    	wtr.write_field(regions::region_as_string(&recs[i]));
+    	//let x: Vec<String> = arr.subview(ndarray::Axis(0), 0).into_raw_vector();
+
+    	//wtr.write_record(arr1(&[1,2,3].iter());
+    	println!("{:?}",i);
+    }
+
+    wtr.flush();
 }
 
 
@@ -94,16 +131,3 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	// matrix with sizes from min size found to
 	// max size found on rows, samples in cols
 	// each output is for a region or set of regions
-
-
-
-// make iterator of the records we're interested in
-// make chain iterator for 
-//    shifting and creating bed records/interval tree 
-//	  counting these records as specified
-
-// for profile, normalize to a percentage of total reads
-// per region or per base?? or just raw counts and worry about post
-// processing later
-
-// make test bam - by chrom?

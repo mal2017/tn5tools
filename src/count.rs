@@ -9,7 +9,7 @@ use rust_htslib::bam;
 use rust_htslib::sam;
 use rust_htslib::prelude::*;
 
-pub fn get_reads_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) -> u32 {
+pub fn get_count_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) -> u32 {
 
 	let chrom_as_bytes = rec.chrom().as_bytes();
 
@@ -24,16 +24,18 @@ pub fn get_reads_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) 
 
 	while let Ok(r) = idxr.read(&mut bam_rec) {
 		let pos = if bam_rec.is_reverse() {
-			bam_rec.pos() + 1 - 5
+			bam_rec.pos() - 4
 		} else {
-			bam_rec.pos() + 1 + 4 // bam is 0based beds, then plus 4 for shift
+			bam_rec.pos() + 4 // bam is 0based beds, then plus 4 for shift
+			//TODO: check on left-rightness of bam records
+			//TODO: check if bam/bed zero base assumptions are correct
 		} as u32;
 
 		if pos >= rec.start() as u32 && pos <= rec.end() as u32 {
-			count += 1; // remember to write a condition here, just a test for now.
+			count += 1;
 		}
 	}
-	count
+	count as u32
 }
 
 // -> bam::Records<'_,IndexedReader>

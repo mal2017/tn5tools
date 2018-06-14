@@ -5,7 +5,7 @@ about: Toolkit for some ATAC-seq problems
 subcommands:
     - counts:
         about: counts 5` transposition sites
-        version: "0.0.9999"
+        version: "0.1.0"
         args:
             - BED:
                 value_name: BED
