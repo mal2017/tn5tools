@@ -20,7 +20,6 @@ pub fn expand_region(mut r: bio::io::bed::Record,
 	r
 }
 
-
 pub fn region_as_string(b: &bio::io::bed::Record) -> String {
 	use std::fmt;
 	use std::fs;

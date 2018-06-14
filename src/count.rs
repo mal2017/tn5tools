@@ -16,6 +16,7 @@ pub fn get_count_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) 
 	let mut idxr = idxr.lock().unwrap();
 	
 	let tid = idxr.header().tid(chrom_as_bytes).unwrap();
+	
 	idxr.fetch(tid, rec.start() as u32, rec.end() as u32);
 	
 	let mut bam_rec = Record::new();
@@ -37,5 +38,3 @@ pub fn get_count_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) 
 	}
 	count as u32
 }
-
-// -> bam::Records<'_,IndexedReader>

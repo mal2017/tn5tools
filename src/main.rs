@@ -63,10 +63,6 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 									  .map(|a| expand_region(a, -5, 5)) // 5 both sides
 					                  .collect();
 
-
-
-
-
     ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 
     let n_row = recs.len();
@@ -102,15 +98,13 @@ fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     
     wtr.write_record(&csv_header);
 
-    
 
     for i in 0..recs.len() {
-    	//println!("{}", regions::region_as_string(&recs[i]));
-    	wtr.write_field(regions::region_as_string(&recs[i]));
-    	//let x: Vec<String> = arr.subview(ndarray::Axis(0), 0).into_raw_vector();
 
-    	//wtr.write_record(arr1(&[1,2,3].iter());
-    	println!("{:?}",i);
+    	wtr.write_field(regions::region_as_string(&recs[i]));
+
+    	wtr.serialize(arr.row(i).to_vec());
+
     }
 
     wtr.flush();
