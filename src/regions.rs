@@ -1,8 +1,4 @@
-use csv;
-use std::convert::AsRef;
-use std::fs;
-use std::io;
-use std::path::Path;
+//use std::path::Path;
 use bio;
 
 
@@ -21,8 +17,7 @@ pub fn expand_region(mut r: bio::io::bed::Record,
 }
 
 pub fn region_as_string(b: &bio::io::bed::Record) -> String {
-	use std::fmt;
-	use std::fs;
+
 
 	// todo check on 0-1 based stuff
 	format!("{}:{}-{}",b.chrom(),b.start(),b.end())

@@ -1,29 +1,24 @@
-use bio;
 use bio::io::bed;
 use rust_htslib::bam::IndexedReader;
-use rust_htslib::bam::Records;
-use rust_htslib::bam::Record;
 use std::sync::{Arc, Mutex};
-use std;
-use rust_htslib::bam;
-use rust_htslib::sam;
+
 use rust_htslib::prelude::*;
 
 pub fn get_count_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) -> u32 {
-
+	use rust_htslib::bam;
 	let chrom_as_bytes = rec.chrom().as_bytes();
 
 	let mut idxr = idxr.lock().unwrap();
 	
 	let tid = idxr.header().tid(chrom_as_bytes).unwrap();
 	
-	idxr.fetch(tid, rec.start() as u32, rec.end() as u32);
+	idxr.fetch(tid, rec.start() as u32, rec.end() as u32).unwrap();
 	
-	let mut bam_rec = Record::new();
+	let mut bam_rec = bam::Record::new();
 	
 	let mut count = 0;
 
-	while let Ok(r) = idxr.read(&mut bam_rec) {
+	while let Ok(_r) = idxr.read(&mut bam_rec) {
 		let pos = if bam_rec.is_reverse() {
 			bam_rec.pos() - 4
 		} else {
@@ -43,23 +38,13 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 	use rayon::prelude::*;
 	use csv;
 	use rust_htslib::bam::IndexedReader;
-	use rust_htslib::bam;
 	use super::regions::expand_region;
 	use super::regions;
-	use indicatif::{ProgressBar, HumanDuration, ProgressStyle, MultiProgress};
-	use std::sync::{Arc, Mutex};
+	use indicatif::{ProgressBar, ProgressStyle};
 	use rayon::ThreadPoolBuilder;
-	use rayon::iter;
 	use std::io;
 	use bio::io::bed;
-	use bio::io::bed::Records;
-	use bio::io::bed::Reader;
-	use std::fs;
-	use std::time::Instant;
-	use ndarray;
 	use ndarray::prelude::*;
-	use serde::ser::{Serialize, Serializer, SerializeStruct};
-
 
 	let mut reader = bed::Reader::from_file(bed_path).unwrap();
 
@@ -112,19 +97,15 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     	  .template("Counting transposition events... {bar:40.blue/red} {percent}% {msg}")
     	  .progress_chars("##-"));
 
+	// TODO make this a flat matrix and elim the flattening below
+    let cuts_vec: Vec<Vec<u32>> = bams.par_iter().map(|bam| {
 
-   	let pbs: Vec<ProgressBar> = bams.iter().map(|a| ProgressBar::new(n_row)).collect();
-    
-    let mut cuts_vec: Vec<Vec<u32>> = bams.par_iter().map(|bam| {
-
-	
 		let idxr = Arc::new(Mutex::new(IndexedReader::from_path(bam).unwrap()));
 
-		let mut cuts: Vec<u32> = recs.par_iter()
+		let cuts: Vec<u32> = recs.par_iter()
     						.map(|a| { pb.inc(1); get_count_in_region(&idxr, &a)})
     						.collect();
 		
-
 		cuts
     }).collect();
     pb.finish_with_message("Complete.");
@@ -135,10 +116,9 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     				  .cloned()
     				  .collect();
 
-
     let arr = Array::from_shape_vec((n_col as usize, n_row as usize), cuts_vec_flat).unwrap()
     														.reversed_axes();
-	
+
     //------------------------------------
 
 
@@ -148,16 +128,16 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
     let mut wtr = csv::Writer::from_writer(io::stdout());
     
-    wtr.write_record(&csv_header);
+    wtr.write_record(&csv_header).unwrap();
 
 
     for i in 0..recs.len() {
 
-    	wtr.write_field(regions::region_as_string(&recs[i]));
+    	wtr.write_field(regions::region_as_string(&recs[i])).unwrap();
 
-    	wtr.serialize(arr.row(i).to_vec());
+    	wtr.serialize(arr.row(i).to_vec()).unwrap();
 
     }
 
-    wtr.flush();
+    wtr.flush().unwrap();
 }
