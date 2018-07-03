@@ -10,4 +10,6 @@ pub mod regions;
 
 pub mod count;
 
+pub mod profile;
+
 // pub mod sizes

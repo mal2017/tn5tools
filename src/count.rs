@@ -35,6 +35,7 @@ pub fn get_count_in_region(idxr: &Arc<Mutex<IndexedReader>>, rec: &bed::Record) 
 }
 
 pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
+	//&Vec<&str>
 	use rayon::prelude::*;
 	use csv;
 	use rust_htslib::bam::IndexedReader;
@@ -90,7 +91,8 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     														.reversed_axes();*/
 
     //------------------------------------	
-    // MEGA PARALLEL	
+    // MEGA PARALLEL
+    
     let pb = ProgressBar::new(n_row * n_col);
 
 	pb.set_style(ProgressStyle::default_bar()
@@ -118,7 +120,7 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
 
     let arr = Array::from_shape_vec((n_col as usize, n_row as usize), cuts_vec_flat).unwrap()
     														.reversed_axes();
-
+	
     //------------------------------------
 
 
@@ -131,10 +133,10 @@ pub fn counts(bed_path: &str, bams: &Vec<&str>, p: usize) {
     wtr.write_record(&csv_header).unwrap();
 
 
-    for i in 0..recs.len() {
+    for (i, c) in recs.iter().enumerate() {
 
-    	wtr.write_field(regions::region_as_string(&recs[i])).unwrap();
-
+    	wtr.write_field(regions::region_as_string(c)).unwrap();
+    	//&recs[i]
     	wtr.serialize(arr.row(i).to_vec()).unwrap();
 
     }

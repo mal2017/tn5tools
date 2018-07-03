@@ -17,8 +17,6 @@ pub fn expand_region(mut r: bio::io::bed::Record,
 }
 
 pub fn region_as_string(b: &bio::io::bed::Record) -> String {
-
-
 	// todo check on 0-1 based stuff
 	format!("{}:{}-{}",b.chrom(),b.start(),b.end())
 }

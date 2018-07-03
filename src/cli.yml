@@ -46,12 +46,15 @@ subcommands:
                 help: Provide a path to a .bed file
                 required: true
                 index: 1
-            - BAMS:
-                value_name: BAMS
-                help: Provide paths to .bam files (must be indexed)
+            - BAM:
+                value_name: BAM
+                help: Provide paths to .bam file (must be indexed)
                 required: true
                 index: 2
-                multiple: true
+                multiple: false
+            - threads:
+                short: p
+                value_name: threads
     - vplot:
         about: get vplot for a set of regions
         version: "0.0.9999"
