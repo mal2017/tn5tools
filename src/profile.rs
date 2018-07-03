@@ -21,7 +21,7 @@ pub fn get_profile_in_region(idxr: &mut IndexedReader, rec: &bed::Record) -> u32
 
 	for r in recs {
 		r.unwrap().set_pos(1);
-		println!("{:?}", r);
+		//println!("{:?}", r);
 	}
 	count as u32
 	//TODO make sure im not shifting reads twice
