@@ -14,4 +14,4 @@ pub mod profile;
 
 pub mod shift;
 
-pub mod utils;
+pub mod cigar_utils;

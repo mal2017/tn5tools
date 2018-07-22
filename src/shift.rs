@@ -1,7 +1,7 @@
 use rust_htslib::bam;
 use rust_htslib::prelude::*;
 use std::str;
-use ::utils;
+use ::cigar_utils;
 
 // shifts all reads in a bam
 
@@ -23,7 +23,7 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 		let qual  = bam_rec.qual().to_owned();
 		let seq   = bam_rec.seq().as_bytes();
 
-		println!("{:?}", utils::trim_cigar(cigar));
+		cigar_utils::trim_cigar_pos(cigar, 31);
 
 		// https://www.biostars.org/p/76892/
 		let new_seq: &[u8] = if bam_rec.is_reverse() {
