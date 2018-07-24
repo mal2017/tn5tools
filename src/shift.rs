@@ -11,29 +11,34 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	let header = bam::Header::from_template(bam.header());
 	let mut obam = bam::Writer::from_path(ob, &header).unwrap();
 
+	if p > 1 {
+		obam.set_threads(p);
+	}
+
 	// only initialize once + use while loop
 	let mut bam_rec = bam::Record::new();
 
 	while let Ok(_r) = bam.read(&mut bam_rec) {
 
 		let insize = bam_rec.insert_size();
+		let qname  = bam_rec.qname().to_owned();
+		let cigar  = bam_rec.cigar().deref().clone();
+		let qual   = bam_rec.qual().to_owned();
+		let seq    = bam_rec.seq().as_bytes();
+		let slen   = bam_rec.seq().len();
+		let is_rev = bam_rec.is_reverse();
 
-		let qname = bam_rec.qname().to_owned();
-		let cigar = bam_rec.cigar().deref().clone();
-		let qual  = bam_rec.qual().to_owned();
-		let seq   = bam_rec.seq().as_bytes();
-
-		cigar_utils::trim_cigar_pos(cigar, 31);
+		cigar_utils::trim_cigar_string_tn5(cigar, is_rev);
 
 		// https://www.biostars.org/p/76892/
-		let new_seq: &[u8] = if bam_rec.is_reverse() {
+		let new_seq: &[u8] = if is_rev {
 			let idx = seq.len() - 4;
 			&seq[..idx]
 		} else {
 			&seq[5..]
 		};
 
-		let pos = if bam_rec.is_reverse() {
+		let pos = if is_rev {
 			bam_rec.pos() - 5
 		} else {
 			bam_rec.pos() + 4

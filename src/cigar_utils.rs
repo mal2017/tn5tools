@@ -1,24 +1,33 @@
 use rust_htslib::bam;
 use rust_htslib::prelude::*;
 
-pub fn trim_cigar_pos(c: bam::record::CigarString, readlen: u32) {
-	//let new_cig = bam::record::Cigar::Match(0);
+pub fn trim_cigar_string_tn5(cigar: bam::record::CigarString, is_rev: bool) {
 
-	let len_c = c.len();
-	let mut consumed = 0;
-	let mut idx = 0;
 
-	// TODO init vec here
-	let mut new_cig_vec = Vec::new();
+	let c_owned: bam::record::CigarString = if is_rev {
+		bam::record::CigarString(cigar.iter().rev().map(|a|a.clone()).collect())
+	} else {
+		cigar
+	};
 
-	while consumed < 5 {
-		let current_cigar_len  = c[idx].len();
-		let current_cigar_char = c[idx].char();
 
-		if  current_cigar_len >= readlen {
-			new_cig_vec.push(format!("{}{}",current_cigar_len-5,current_cigar_char));
-		}	
-		consumed +=5;
+	let c_new: Vec<bam::record::Cigar> = Vec::new();
+
+	for c in c_owned.iter() {
+		trim_single_cigar(c, 5);
 	}
 
 }
+
+fn trim_single_cigar(c: &bam::record::Cigar, left_to_trim: u32) {
+	use rust_htslib::bam::record::Cigar;
+	match c {
+		Cigar::Match(u32) | Cigar::Equal(u32) | 
+			Cigar::Diff(u32) | Cigar::Ins(u32) |
+			Cigar::SoftClip(u32) => println!("consume"),
+		_ => return(None),
+	}
+
+}
+
+//pub consume_cigar()
