@@ -7,6 +7,8 @@ use ::cigar_utils;
 
 pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	use std::ops::Deref;
+	use rust_htslib::bam::record::{Cigar, CigarString};
+
 	let mut bam = bam::Reader::from_path(ib).unwrap();
 	let header = bam::Header::from_template(bam.header());
 	let mut obam = bam::Writer::from_path(ob, &header).unwrap();
@@ -17,18 +19,31 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 
 	// only initialize once + use while loop
 	let mut bam_rec = bam::Record::new();
+	let mut new_cigarstr = CigarString(vec![Cigar::Match(0)]);
+	let mut new_insize: i32;;
+	let mut is_rev: bool;
+	let mut seq: Vec<u8>;
+	let mut slen: usize;
+	let mut qual: Vec<u8>;
+	let mut qname: Vec<u8>;
 
 	while let Ok(_r) = bam.read(&mut bam_rec) {
 
-		let insize = bam_rec.insert_size();
-		let qname  = bam_rec.qname().to_owned();
-		let cigar  = bam_rec.cigar().deref().clone();
-		let qual   = bam_rec.qual().to_owned();
-		let seq    = bam_rec.seq().as_bytes();
-		let slen   = bam_rec.seq().len();
-		let is_rev = bam_rec.is_reverse();
-
-		cigar_utils::trim_cigar_string_tn5(cigar, is_rev);
+		is_rev = bam_rec.is_reverse();
+		if is_rev {
+			new_insize = bam_rec.insert_size() + 9
+		} else {
+			new_insize = bam_rec.insert_size() - 9
+		};
+		//println!("{:?}", new_insize);
+		//let mut cigar  = bam_rec.cigar();//.clone();
+		qual   = bam_rec.qual().to_owned();
+		qname   = bam_rec.qname().to_owned();
+		seq    = bam_rec.seq().as_bytes();
+		slen   = bam_rec.seq().len();
+		new_cigarstr  = CigarString(vec![Cigar::Match(slen as u32)]);
+		
+		//cigar_utils::trim_cigar_string_tn5(&cigar, &is_rev);
 
 		// https://www.biostars.org/p/76892/
 		let new_seq: &[u8] = if is_rev {
@@ -44,9 +59,13 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 			bam_rec.pos() + 4
 		} as u32;
 
+		bam_rec.set(&qname,
+					&new_cigarstr,
+					&new_seq,
+					&qual);
 
 		// account for offsets with new insert size
-		bam_rec.set_insert_size(insize - 9);
+		bam_rec.set_insert_size(new_insize);
 		
 		bam_rec.set_pos(pos as i32);
 
