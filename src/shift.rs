@@ -11,7 +11,18 @@ pub fn shift_bam(ib: &str) {
 	use rust_htslib::bam::record::{Cigar, CigarString, Aux};
 
 	let mut bam = bam::Reader::from_path(ib).unwrap();
-	let header = bam::Header::from_template(bam.header());
+	let mut header = bam::Header::from_template(bam.header());
+
+	//let sort_type = String::from("unsorted");
+	//let mut new_hd_rec = bam::header::HeaderRecord::new(b"HD");
+	//new_hd_rec.push_tag(b"SO",&sort_type);
+	//header.push_record(&new_hd_rec);
+
+	let x: Vec<str> = str::from_utf8(&header.to_bytes())
+						.unwrap()
+						.lines()
+						.collect();
+	println!("{:?}", x);
 
 	//let mut obam = bam::Writer::from_path(ob, &header).unwrap();
 	let mut osam = sam::Writer::from_stdout(&header).unwrap();
@@ -27,8 +38,9 @@ pub fn shift_bam(ib: &str) {
 	let mut qname: Vec<u8>;
 	let mut new_qual: Vec<u8>;
 	let mut new_seq: Vec<u8>;
-	let mut pos: u32;
+	let mut pos: i32;
 	let mut idx: usize;
+	let mut mpos: i32;
 
 	while let Ok(_r) = bam.read(&mut bam_rec) {
 
@@ -44,14 +56,16 @@ pub fn shift_bam(ib: &str) {
 		if is_rev {
 			idx = slen - 4;
 			new_seq = seq[..idx].to_vec();
-			pos = bam_rec.pos() as u32 - 5;
+			pos = bam_rec.pos() as i32 - 5;
 			new_qual = qual[..idx].to_vec();
 			new_insize = bam_rec.insert_size() + 9;
+			mpos = bam_rec.mpos() as i32 + 4;
 		} else {
-			pos = bam_rec.pos() as u32 + 4;
+			pos = bam_rec.pos() as i32 + 4;
 			new_seq = seq[5..].to_vec();
 			new_qual = qual[5..].to_vec();
 			new_insize = bam_rec.insert_size() - 9;
+			mpos = bam_rec.mpos() as i32 - 5;
 		}
 
 		new_cigarstr = CigarString(vec![Cigar::Match(new_seq.len() as u32)]);
@@ -59,14 +73,16 @@ pub fn shift_bam(ib: &str) {
 		// account for offsets with new insert size
 		bam_rec.set_insert_size(new_insize);
 		
-		bam_rec.set_pos(pos as i32);
+		bam_rec.set_pos(pos);
+		bam_rec.set_mpos(mpos);
+
 
 		bam_rec.set(&qname,
 			&new_cigarstr,
 			&new_seq,
 			&new_qual);
 
-		osam.write(&bam_rec).unwrap();
+		//osam.write(&bam_rec).unwrap();
 	}	
 
 }
