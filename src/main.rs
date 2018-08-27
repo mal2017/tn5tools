@@ -33,7 +33,8 @@ fn main() {
         // Safe to use unwrap() because of the required() option
         let bam: &str = m.value_of("BAM").unwrap();
         let obam: &str = m.value_of("OBAM").unwrap();
-        shift::shift_bam(&bam, &obam);
+        let threads: u32 =  m.value_of("threads").unwrap_or("1").to_string().parse().unwrap();
+        shift::shift_bam(&bam, &obam, threads as usize);
 	}
 
 	if let Some(m) = m.subcommand_matches("profile") {

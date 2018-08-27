@@ -18,7 +18,7 @@ pub fn edit_hdr_unsrt(hdrv: &bam::HeaderView) -> bam::header::Header {
 
 
 /// From a bam header stored as a HashMap storing a vector of LinearMaps, spit out a new header.
-pub fn from_hashmap(hm: &HashMap<String, Vec<LinearMap<String, String>>>) ->  bam::header::Header {
+fn from_hashmap(hm: &HashMap<String, Vec<LinearMap<String, String>>>) ->  bam::header::Header {
 	let tags = vec!["HD","SQ","PG","CL","RG"];
 	let bam_header_strings = tags.iter()
 								 .map(|a| hdr_tag_to_string_vector(a, &hm));

@@ -1,25 +1,31 @@
 use rust_htslib::bam;
 use rust_htslib::prelude::*;
-
-pub fn trim_cigar_string_tn5(cigar: &bam::record::CigarString, is_rev: &bool) {
-
-
-	for mut i in &mut cigar.into_iter() {
-		trim_single_cigar(i,0);
-	}
+use std::iter;
 
 
+// 1. expand cigar
+// 2. consume cigar while following rules
+// 3. as this happens, build read specific rule for sequence
 
+
+fn expand_cigarstring(cs: &bam::record::CigarString) -> Vec<char> {
+	cs.iter()
+	  .flat_map(|a| vec![a.char(); a.len() as usize])
+	  .collect::<Vec<char>>()
 }
 
-fn trim_single_cigar(c: &bam::record::Cigar, left_to_trim: u32) {
-	use rust_htslib::bam::record::Cigar;
-	match c {
-		Cigar::Match(u32) | Cigar::Equal(u32) | 
-			Cigar::Diff(u32) | Cigar::Ins(u32) |
-			Cigar::SoftClip(u32) => (),
-		_ => (),
+
+pub fn trim_cigar_string_tn5(cs: &bam::record::CigarString, is_rev: &bool) {
+
+	let mut cs_vec = expand_cigarstring(cs);
+	let rng = if *is_rev {
+		(0..(cs_vec.len() - 1)).rev()
+	} else {
+		(0..(cs_vec.len() - 1))
 	};
-}
 
-//pub consume_cigar()
+	println!("{:?}", is_rev);
+	for i in rng {
+		println!("{:?}", i);
+	}
+}

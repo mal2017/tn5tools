@@ -9,18 +9,13 @@ use linear_map::LinearMap;
 
 // shifts all reads in a bam
 
-pub fn shift_bam(ib: &str, ob: &str) {
+pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	use std::ops::Deref;
 	use rust_htslib::bam::record::{Cigar, CigarString, Aux};
-
 	let mut bam = bam::Reader::from_path(ib).unwrap();
+	bam.set_threads(p);
 	let mut header = header_utils::edit_hdr_unsrt(bam.header());
-
-	//let h3 = header_utils::from_hashmap(&h2);
-
 	let mut obam = bam::Writer::from_path(ob, &header).unwrap();
-	//let mut osam = sam::Writer::from_stdout(&header).unwrap();
-
 	// only initialize once + use while loop
 	let mut bam_rec = bam::Record::new();
 	let mut new_cigarstr = CigarString(vec![Cigar::Match(0)]);
@@ -36,18 +31,16 @@ pub fn shift_bam(ib: &str, ob: &str) {
 	let mut idx: usize;
 	let mut mpos: i32;
 	let mut bin: u16;
-
 	while let Ok(_r) = bam.read(&mut bam_rec) {
+		// TODO: do i need to let/reassign here?
 		// TODO: if is not mapped, write record and skip
 	 	is_rev = bam_rec.is_reverse();
 	 	qual   = bam_rec.qual().to_owned();
 	 	qname  = bam_rec.qname().to_owned();
 	 	seq    = bam_rec.seq().as_bytes();
 	 	slen   = bam_rec.seq().len();
-
-		// 	//cigar_utils::trim_cigar_string_tn5(&cigar, &is_rev);
-		// 	// https://www.biostars.org/p/76892/
-
+		// https://www.biostars.org/p/76892/
+		// https://jef.works/blog/2017/03/28/CIGAR-strings-for-dummies/
 	 	if is_rev {
 	 		idx = slen - 4;
 	 		new_seq = seq[..idx].to_vec();
@@ -62,31 +55,22 @@ pub fn shift_bam(ib: &str, ob: &str) {
 	 		new_insize = bam_rec.insert_size() - 9;
 	 		mpos = bam_rec.mpos() as i32 - 5;
 	 	}
-
 	 	bin = reg2bin(pos, pos + new_seq.len() as i32);
-
-	 	if bin != bam_rec.bin() {
-	 		println!("{:?} : {:?} : {:?}",pos, bin, bam_rec.bin());
-	 	}
-
 	 	bam_rec.set_bin(bin);
-
+	 	//TODO delete this
 	 	new_cigarstr = CigarString(vec![Cigar::Match(new_seq.len() as u32)]);
-
 	 	// account for offsets with new insert size
+	 	cigar_utils::trim_cigar_string_tn5(&bam_rec.cigar(), &is_rev);
+
 	 	bam_rec.set_insert_size(new_insize);
-	
 	 	bam_rec.set_pos(pos);
 	 	bam_rec.set_mpos(mpos);
-	
 	 	bam_rec.set(&qname,
 	 		&new_cigarstr,
 	 		&new_seq,
 	 		&new_qual);
-
 		obam.write(&bam_rec).unwrap();
 	}	
-
 }
 
 // For details, see SAM V1 format spec.
