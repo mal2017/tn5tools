@@ -16,77 +16,70 @@ pub fn shift_bam(ib: &str) {
 	let mut bam = bam::Reader::from_path(ib).unwrap();
 	let mut header = bam::Header::from_template(bam.header());
 
-	let h2 = header.to_hashmap();
+	let mut h2 = header.to_hashmap();
+
+	header_utils::edit_hdr_unsrt(&mut h2);
 
 	let h3 = header_utils::from_hashmap(&h2);
 
-
-	////let sort_type = String::from("unsorted");
-	////let mut new_hd_rec = bam::header::HeaderRecord::new(b"HD");
-	////new_hd_rec.push_tag(b"SO",&sort_type);
-	////header.push_record(&new_hd_rec);
-
-	//println!("{:?}", header);
-
 	//let mut obam = bam::Writer::from_path(ob, &header).unwrap();
-	//let mut osam = sam::Writer::from_stdout(&header).unwrap();
+	let mut osam = sam::Writer::from_stdout(&header).unwrap();
 
 	// only initialize once + use while loop
-	//let mut bam_rec = bam::Record::new();
-	// let mut new_cigarstr = CigarString(vec![Cigar::Match(0)]);
-	// let mut new_insize: i32;
-	// let mut is_rev: bool;
-	// let mut seq: Vec<u8>;
-	// let mut slen: usize;
-	// let mut qual: Vec<u8>;
-	// let mut qname: Vec<u8>;
-	// let mut new_qual: Vec<u8>;
-	// let mut new_seq: Vec<u8>;
-	// let mut pos: i32;
-	// let mut idx: usize;
-	// let mut mpos: i32;
+	let mut bam_rec = bam::Record::new();
+	let mut new_cigarstr = CigarString(vec![Cigar::Match(0)]);
+	let mut new_insize: i32;
+	let mut is_rev: bool;
+	let mut seq: Vec<u8>;
+	let mut slen: usize;
+	let mut qual: Vec<u8>;
+	let mut qname: Vec<u8>;
+	let mut new_qual: Vec<u8>;
+	let mut new_seq: Vec<u8>;
+	let mut pos: i32;
+	let mut idx: usize;
+	let mut mpos: i32;
 
-	// while let Ok(_r) = bam.read(&mut bam_rec) {
+	while let Ok(_r) = bam.read(&mut bam_rec) {
 
-	// 	is_rev = bam_rec.is_reverse();
-	// 	qual   = bam_rec.qual().to_owned();
-	// 	qname  = bam_rec.qname().to_owned();
-	// 	seq    = bam_rec.seq().as_bytes();
-	// 	slen   = bam_rec.seq().len();
+	 	is_rev = bam_rec.is_reverse();
+	 	qual   = bam_rec.qual().to_owned();
+	 	qname  = bam_rec.qname().to_owned();
+	 	seq    = bam_rec.seq().as_bytes();
+	 	slen   = bam_rec.seq().len();
 
 	// 	//cigar_utils::trim_cigar_string_tn5(&cigar, &is_rev);
 	// 	// https://www.biostars.org/p/76892/
 
-	// 	if is_rev {
-	// 		idx = slen - 4;
-	// 		new_seq = seq[..idx].to_vec();
-	// 		pos = bam_rec.pos() as i32 - 5;
-	// 		new_qual = qual[..idx].to_vec();
-	// 		new_insize = bam_rec.insert_size() + 9;
-	// 		mpos = bam_rec.mpos() as i32 + 4;
-	// 	} else {
-	// 		pos = bam_rec.pos() as i32 + 4;
-	// 		new_seq = seq[5..].to_vec();
-	// 		new_qual = qual[5..].to_vec();
-	// 		new_insize = bam_rec.insert_size() - 9;
-	// 		mpos = bam_rec.mpos() as i32 - 5;
-	// 	}
+	 	if is_rev {
+	 		idx = slen - 4;
+	 		new_seq = seq[..idx].to_vec();
+	 		pos = bam_rec.pos() as i32 - 5;
+	 		new_qual = qual[..idx].to_vec();
+	 		new_insize = bam_rec.insert_size() + 9;
+	 		mpos = bam_rec.mpos() as i32 + 4;
+	 	} else {
+	 		pos = bam_rec.pos() as i32 + 4;
+	 		new_seq = seq[5..].to_vec();
+	 		new_qual = qual[5..].to_vec();
+	 		new_insize = bam_rec.insert_size() - 9;
+	 		mpos = bam_rec.mpos() as i32 - 5;
+	 	}
 
-	// 	new_cigarstr = CigarString(vec![Cigar::Match(new_seq.len() as u32)]);
+	 	new_cigarstr = CigarString(vec![Cigar::Match(new_seq.len() as u32)]);
 
-	// 	// account for offsets with new insert size
-	// 	bam_rec.set_insert_size(new_insize);
+	 	// account for offsets with new insert size
+	 	bam_rec.set_insert_size(new_insize);
 		
-	// 	bam_rec.set_pos(pos);
-	// 	bam_rec.set_mpos(mpos);
+	 	bam_rec.set_pos(pos);
+	 	bam_rec.set_mpos(mpos);
 
+	 	bam_rec.set(&qname,
+	 		&new_cigarstr,
+	 		&new_seq,
+	 		&new_qual);
 
-	// 	bam_rec.set(&qname,
-	// 		&new_cigarstr,
-	// 		&new_seq,
-	// 		&new_qual);
-
-		//osam.write(&bam_rec).unwrap();
-	//}	
+		osam.write(&bam_rec).unwrap();
+	}	
 
 }
