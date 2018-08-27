@@ -5,11 +5,15 @@ use linear_map::LinearMap;
 use itertools::Itertools;
 use std::string::String;
 
-pub fn edit_hdr_unsrt(hm: &mut HashMap<String, Vec<LinearMap<String, String>>>) {
-	let mut old_hd = &hm.get("HD").unwrap()[0].to_owned();
-
-	&old_hd.insert("SO".to_owned(),"unsorted".to_owned());
-
+pub fn edit_hdr_unsrt(hdrv: &bam::HeaderView) -> bam::header::Header {
+	let hdr = bam::Header::from_template(hdrv);
+	let mut hm = hdr.to_hashmap().to_owned();
+	let hd = &hm.get("HD").unwrap().to_owned();
+	// TODO Assert only 1 HD entry
+	let mut record = hd[0].to_owned();
+	&mut record.insert("SO".to_string(),"unsorted".to_string());
+	hm.insert("HD".to_owned(),vec![record]);
+	from_hashmap(&hm)
 }
 
 
@@ -56,3 +60,5 @@ fn hdr_tag_to_string_vector(tag: &str, hm: &HashMap<String, Vec<LinearMap<String
 		None => None,
 	}
 }
+
+

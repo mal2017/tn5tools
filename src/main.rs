@@ -32,7 +32,8 @@ fn main() {
 	if let Some(m) = m.subcommand_matches("shift") {
         // Safe to use unwrap() because of the required() option
         let bam: &str = m.value_of("BAM").unwrap();
-        shift::shift_bam(&bam);
+        let obam: &str = m.value_of("OBAM").unwrap();
+        shift::shift_bam(&bam, &obam);
 	}
 
 	if let Some(m) = m.subcommand_matches("profile") {
