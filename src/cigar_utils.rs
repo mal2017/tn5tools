@@ -17,15 +17,22 @@ fn expand_cigarstring(cs: &bam::record::CigarString) -> Vec<char> {
 
 pub fn trim_cigar_string_tn5(cs: &bam::record::CigarString, is_rev: &bool) {
 
-	let mut cs_vec = expand_cigarstring(cs);
-	let rng = if *is_rev {
-		(0..(cs_vec.len() - 1)).rev()
+	let cs_vec = expand_cigarstring(cs);
+	let upper_idx = cs_vec.len() - 1;
+
+	let rng: Vec<usize> = if *is_rev {
+		(0..upper_idx).rev().collect()
 	} else {
-		(0..(cs_vec.len() - 1))
+		(0..upper_idx).collect()
 	};
 
-	println!("{:?}", is_rev);
+	let mut cgr: char;
 	for i in rng {
-		println!("{:?}", i);
+		cgr = cs_vec[i];
+		match cgr {
+			'M' => (),
+			'D' => (),
+			_   => (),
+		}
 	}
 }
