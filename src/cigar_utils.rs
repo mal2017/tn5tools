@@ -33,9 +33,9 @@ fn char_vec_to_cigarstring(cv: Vec<char>) -> CigarString {
 			current_char = x;
 			current_ct = 1;
 		}
-		cigar_vec.push(char_to_cigar(&current_char, current_ct).unwrap()); // final cigar
+		
 	}
-
+	cigar_vec.push(char_to_cigar(&current_char, current_ct).unwrap()); // final cigar
 	CigarString(cigar_vec)
 }
 
