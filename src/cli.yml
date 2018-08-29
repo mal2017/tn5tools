@@ -41,7 +41,7 @@ subcommands:
                 value_name: threads
     - shift:
         about: shift all reads in a bam to reflect tn5 insertion behavior
-        version: "0.0.9999"
+        version: "0.1.0"
         args:
             - BAM:
                 value_name: BAM
