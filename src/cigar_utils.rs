@@ -84,7 +84,7 @@ pub fn trim_cigar_adjust_shift_tn5(cs: &bam::record::CigarString, is_rev: &bool)
 	// KEEP FOR DEBUG
 	//let mut has_indel: bool = false;
 
-	while (moves > 0) & ((cs_vec[idx] != 'D') & (cs_vec[idx] != 'N') & (cs_vec[idx] != 'H')) {
+	while (moves > 0) & ((cs_vec[idx] != 'D') & (cs_vec[idx] != 'N') & (cs_vec[idx] != 'H') & (cs_vec[idx] != 'P')) {
 		cgr = cs_vec[idx];
 		match cgr {
 			'M' | '=' | 'X' => {
