@@ -1,14 +1,12 @@
-use bio::io::bed;
 use rust_htslib::bam::IndexedReader;
-use std::sync::{Arc, Mutex};
+use rust_htslib::prelude::*;	
+//use csv;
+use super::regions::expand_region;
+use bio::io::bed;
 
-use rust_htslib::prelude::*;
-use rust_htslib::bam::buffer::RecordBuffer;
 
 pub fn get_profile_in_region(idxr: &mut IndexedReader, rec: &bed::Record) -> u32 {
 
-	use rust_htslib::bam;
-		
 	let chrom_as_bytes = rec.chrom().as_bytes();
 
 	let tid = idxr.header().tid(chrom_as_bytes).unwrap();
@@ -19,27 +17,17 @@ pub fn get_profile_in_region(idxr: &mut IndexedReader, rec: &bed::Record) -> u32
 
 	let recs = idxr.records();
 
-	for r in recs {
-		r.unwrap();
-		println!("yo");
+	for _r in recs {
+		count += 1;
 	}
 	count as u32
 	//TODO make sure im not shifting reads twice
 }
 
 
-pub fn profile(bed_path: &str, bam: &str, p: usize) {
+pub fn profile(bed_path: &str, bam: &str, _p: usize) {
 	//&Vec<&str>
-	use rayon::prelude::*;
-	use csv;
-	use rust_htslib::bam::IndexedReader;
-	use super::regions::expand_region;
-	use super::regions;
-	use indicatif::{ProgressBar, ProgressStyle};
-	use rayon::ThreadPoolBuilder;
-	use std::io;
-	use bio::io::bed;
-	use ndarray::prelude::*;
+
 
 	let mut reader = bed::Reader::from_file(bed_path).unwrap();
 
@@ -52,7 +40,7 @@ pub fn profile(bed_path: &str, bam: &str, p: usize) {
 									   .collect();
 
 
-	let cuts: Vec<u32> = recs.iter()
+	let _cuts: Vec<u32> = recs.iter()
 							.map(|a| { get_profile_in_region(&mut idxr, &a)})
 							.collect();
 

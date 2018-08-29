@@ -1,8 +1,5 @@
 use rust_htslib::bam;
-use rust_htslib::prelude::*;
-use std::iter;
-use rust_htslib::bam::record::{Cigar, CigarString, Aux};
-use rayon::prelude::*;
+use rust_htslib::bam::record::{Cigar, CigarString};
 
 // 1. expand cigar
 // 2. consume cigar while following rules
@@ -101,7 +98,7 @@ pub fn trim_cigar_adjust_shift_tn5(cs: &bam::record::CigarString, is_rev: &bool)
 			},
 			'I' | 'S' => {
 				moves -= 1;
-				seq_shift +=1;
+				seq_shift += 1;
 				// pos shift remains, we're moving through an insertion not in ref
 				//has_indel = true
 			},

@@ -1,8 +1,6 @@
 use rust_htslib::bam;
-use rust_htslib::prelude::*;
 use std::collections::HashMap;
 use linear_map::LinearMap;
-use itertools::Itertools;
 use std::string::String;
 
 pub fn edit_hdr_unsrt(hdrv: &bam::HeaderView) -> bam::header::Header {
