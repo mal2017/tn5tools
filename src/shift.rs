@@ -50,9 +50,7 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	 	seq    = bam_rec.seq().as_bytes();
 	 	slen   = bam_rec.seq().len();
 	 	mpos   = bam_rec.mpos();
-	 	new_insize = bam_rec.insert_size() - 
-	 		(m_new_cigarstr.seq_shift + 
-	 			new_cigarstr.seq_shift) as i32;
+	 	
 		// https://www.biostars.org/p/76892/
 		// https://jef.works/blog/2017/03/28/CIGAR-strings-for-dummies/
 	 	if is_rev {
@@ -60,11 +58,17 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	 		new_seq = seq[..idx].to_vec();
 	 		new_qual = qual[..idx].to_vec();
 	 		bam_rec.set_mpos(mpos + m_new_cigarstr.pos_shift as i32);
+	 		new_insize = bam_rec.insert_size() + 
+	 		(m_new_cigarstr.seq_shift + 
+	 			new_cigarstr.seq_shift) as i32;
 	 	} else {
 	 		pos = pos + new_cigarstr.pos_shift as i32;
 	 		new_seq = seq[(new_cigarstr.seq_shift as usize)..].to_vec();
 	 		new_qual = qual[(new_cigarstr.seq_shift as usize)..].to_vec();
 	 		bam_rec.set_pos(pos);
+	 		new_insize = bam_rec.insert_size() - 
+	 		(m_new_cigarstr.seq_shift + 
+	 			new_cigarstr.seq_shift) as i32;
 	 	}
 	 	bam_rec.set_bin(reg2bin(pos, pos + new_seq.len() as i32));
 		bam_rec.set_insert_size(new_insize);
