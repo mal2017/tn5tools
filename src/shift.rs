@@ -1,8 +1,8 @@
 use rust_htslib::bam;
 use rust_htslib::prelude::*;
 use std::str;
-use ::cigar_utils::*;
-use ::header_utils;
+use ::atacbam::cigar_utils::*;
+use ::atacbam::header_utils;
 use rust_htslib::bam::record::CigarString;
 
 // Shift all mapped reads in bam and output to new bam.
@@ -40,10 +40,10 @@ pub fn shift_bam(ib: &str, ob: &str, p: usize) {
 	while let Ok(_r) = bam.read(&mut bam_rec) {
 		if bam_rec.is_unmapped() { continue; }
 		is_rev = bam_rec.is_reverse();
-		m_new_cigarstr = trim_cigar_adjust_shift_tn5(&CigarString::from_bytes(bam_rec.aux(b"MC")
+		m_new_cigarstr = get_tn5shift_params(&CigarString::from_bytes(bam_rec.aux(b"MC")
 	 																				 .unwrap()
 	 																				 .string()).unwrap(), &!is_rev);
-	 	new_cigarstr = trim_cigar_adjust_shift_tn5(&bam_rec.cigar(), &is_rev);
+	 	new_cigarstr = get_tn5shift_params(&bam_rec.cigar(), &is_rev);
 	 	pos    = bam_rec.pos();  
 	 	qual   = bam_rec.qual().to_owned();
 	 	qname  = bam_rec.qname().to_owned();
@@ -101,8 +101,6 @@ fn reg2bin(beg: i32, e: i32) -> u16 {
 	};
 	return 0u16
 }
-
-
 
 
 

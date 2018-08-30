@@ -14,5 +14,6 @@ ndarray={version = "0.11.2", features = ["serde-1"]}
 serde="*"
 linear-map="1.2.0"
 itertools="*"
+quick-error="1.2.2"
 
 

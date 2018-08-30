@@ -57,3 +57,21 @@ subcommands:
             - threads:
                 short: p
                 value_name: threads
+    - tn5shift:
+        about: shift all reads in a bam to reflect tn5 insertion behavior
+        version: "0.0.9999"
+        args:
+            - BAM:
+                value_name: BAM
+                help: Provide paths to 1 .bam file (does not require index)
+                required: true
+                index: 1
+                multiple: false
+            - OBAM:
+                value_name: OBAM
+                help: Provide a path to an output bam
+                required: true
+                index: 2
+            - threads:
+                short: p
+                value_name: threads

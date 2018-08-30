@@ -7,6 +7,7 @@ extern crate serde;
 extern crate ndarray;
 extern crate linear_map;
 extern crate itertools;
+#[macro_use] extern crate quick_error;
 
 pub mod regions;
 
@@ -14,8 +15,8 @@ pub mod count;
 
 pub mod profile;
 
-pub mod shift;
+pub mod shift; // the old crappy version
 
-pub mod cigar_utils;
+pub mod tn5shift;
 
-pub mod header_utils;
+pub mod atacbam;

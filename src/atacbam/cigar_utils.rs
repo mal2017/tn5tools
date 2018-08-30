@@ -54,7 +54,7 @@ fn char_to_cigar(t: &char, n: u32) -> Option<Cigar> {
 	}
 }
 
-pub fn trim_cigar_adjust_shift_tn5(cs: &bam::record::CigarString, is_rev: &bool) -> CigarTrimParams {
+pub fn get_tn5shift_params(cs: &bam::record::CigarString, is_rev: &bool) -> CigarTrimParams {
 
 	// current cigar string as char vec
 	let cs_vec: Vec<char> = if *is_rev {
