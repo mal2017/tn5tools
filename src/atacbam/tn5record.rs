@@ -15,10 +15,9 @@ pub struct Tn5Record {
 	pub inner  : rust_htslib::bam::Record,
 	is_shifted : bool,
 	rev        : bool,
-	intended_shift: u32,
 	shifted_cigar_config: CigarTrimParams,
 	shifted_mate_cigar_config: CigarTrimParams,
-	attributes: RecordAttributes,
+	orig_attr: RecordAttributes,
 	aux_hm : Option<HashMap<String,String>>,
 }
 
@@ -32,10 +31,9 @@ impl Tn5Record {
 			inner: r,
 			is_shifted: false,
 			rev: is_rev,
-			intended_shift: if is_rev {5} else {4},
 			shifted_cigar_config: get_tn5shift_params(&cigar, &is_rev),
-			shifted_mate_cigar_config: get_tn5shift_params(&mate_cigar, &is_rev),
-			attributes: ra,
+			shifted_mate_cigar_config: get_tn5shift_params(&mate_cigar, &!is_rev),
+			orig_attr: ra,
 			aux_hm : None,
 
 		})
@@ -50,47 +48,52 @@ impl Tn5Record {
 	}
 
 
-	pub fn tn5shift(&self) {
-		// TODO
-	}
-
-	fn tn5_seq_shift(&mut self) {
-
+	pub fn tn5shift(&mut self) {
 		if self.rev {
+			let idx = self.orig_attr.seq.len() - self.shifted_cigar_config
+										   				  .seq_shift as usize;
+
+			self.inner.set_mpos(self.orig_attr.mpos + 
+				self.shifted_mate_cigar_config.pos_shift as i32);
+
+			self.inner.set_insert_size(self.orig_attr.insize + 
+				(self.shifted_mate_cigar_config.seq_shift + 
+					self.shifted_cigar_config.seq_shift) as i32);
+
+			self.inner.set(&self.orig_attr.qname,
+						   &self.shifted_cigar_config.cigar,
+						   &self.orig_attr.seq[..idx].to_vec(),
+						   &self.orig_attr.qual[..idx].to_vec());
 			
+		} else {
+			let idx = self.shifted_cigar_config.seq_shift as usize;
+
+			self.inner.set_pos(self.orig_attr.pos + self.shifted_cigar_config.pos_shift as i32);
+
+			self.inner.set_insert_size(self.orig_attr.insize - 
+				(self.shifted_mate_cigar_config.seq_shift + 
+					self.shifted_cigar_config.seq_shift) as i32);
+
+			self.inner.set(&self.orig_attr.qname,
+						   &self.shifted_cigar_config.cigar,
+						   &self.orig_attr.seq[idx..].to_vec(),
+						   &self.orig_attr.qual[idx..].to_vec());
 		}
-	} 
-
-	fn tn5_pos_shift(&self) {
-		// TODO
-	}
-
-	fn tn5_qual_shift(&self) {
-		// TODO
-	}
-
-	fn tn5_new_insize(&self) {
-		//TODO
-	}
-
-	fn set_new_bin(&self) {
-		// TODO
-	}
-
-	fn update_cigar_in_record(&self) {
+		let new_pos = self.inner.pos();
+		let new_seqlen =  self.inner.seq().len();
+		self.inner.set_bin(reg2bin(new_pos, new_pos + new_seqlen as i32));
 
 	}
 
 	fn update_aux_in_record(&self) {
 
 	}
-
-
 }
 
 #[derive(Debug)]
 struct RecordAttributes {
 	qual: Vec<u8>,
+	insize: i32,
 	pos: i32,
 	qname: Vec<u8>,
 	seq: Vec<u8>,
@@ -101,6 +104,7 @@ impl RecordAttributes {
 	fn from_record(r: &rust_htslib::bam::Record) -> Self {
 		RecordAttributes {
 			qual: r.qual().to_owned(),
+			insize: r.insert_size(),
 			pos: r.pos(),
 			qname: r.qname().to_owned(),
 			seq: r.seq().as_bytes(),
@@ -116,4 +120,26 @@ quick_error! {
             description("Record is unmapped/unpaired")
         }
     }
+}
+
+// For details, see SAM V1 format spec.
+// Calculates bin for bai style bin scheme.
+fn reg2bin(beg: i32, e: i32) -> u16 {
+	let end = e - 1;
+	if beg>>14 == end>>14 {
+		return ((1<<15)-1)/7 + (beg>>14) as u16
+	};
+	if beg>>17 == end>>17 {
+		return ((1<<12)-1)/7 + (beg>>17) as u16
+	};
+	if beg>>20 == end>>20 {
+		return ((1<<9)-1)/7 + (beg>>20) as u16
+	};
+	if beg>>23 == end>>23 {
+		return ((1<<6)-1)/7 + (beg>>23) as u16
+	};
+	if beg>>26 == end>>26 {
+		return ((1<<3)-1)/7 + (beg>>26) as u16
+	};
+	return 0u16
 }
