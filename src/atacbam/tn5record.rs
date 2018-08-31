@@ -12,38 +12,30 @@ trait Empty<T> {
 
 #[derive(Debug)]
 pub struct Tn5Record {
-	inner      : rust_htslib::bam::Record,
-	mate_cigar : CigarString,
+	pub inner  : rust_htslib::bam::Record,
 	is_shifted : bool,
 	rev        : bool,
 	intended_shift: u32,
-	shifted_cig  : Option<CigarString>,
-	shifted_mate_cig : Option<CigarString>,
-	pos_shift  : Option<u32>,
-	seq_shift  : Option<u32>,
-	pos_mate_shift : Option<u32>,
-	seq_mate_shift : Option<u32>,
+	shifted_cigar_config: CigarTrimParams,
+	shifted_mate_cigar_config: CigarTrimParams,
+	attributes: RecordAttributes,
 	aux_hm : Option<HashMap<String,String>>,
 }
 
 impl Tn5Record {
 	pub fn from_record(r: rust_htslib::bam::Record) -> Result<Self, Tn5RecordError> {
 		let is_rev = r.is_reverse();
-
-		let mate_cig = CigarString::from_bytes(r.aux(b"MC").unwrap().string()).unwrap();
-
+		let cigar = r.cigar();
+		let mate_cigar = CigarString::from_bytes(r.aux(b"MC").unwrap().string()).unwrap();
+		let ra = RecordAttributes::from_record(&r);
 		Ok(Tn5Record{
 			inner: r,
-			mate_cigar : mate_cig,
 			is_shifted: false,
 			rev: is_rev,
-			intended_shift: if is_rev {4} else {5},
-			shifted_cig: None,
-			shifted_mate_cig: None,
-			pos_shift: None,
-			seq_shift: None,
-			pos_mate_shift: None,
-			seq_mate_shift: None,
+			intended_shift: if is_rev {5} else {4},
+			shifted_cigar_config: get_tn5shift_params(&cigar, &is_rev),
+			shifted_mate_cigar_config: get_tn5shift_params(&mate_cigar, &is_rev),
+			attributes: ra,
 			aux_hm : None,
 
 		})
@@ -53,30 +45,20 @@ impl Tn5Record {
 		&self.inner
 	}
 
-	fn set_cigar_shift_tn5(&mut self) {
-		let cigar_config = get_tn5shift_params(&self.inner.cigar(), &self.rev);
-		self.shifted_cig = Some(cigar_config.cigar);
-		self.pos_shift = Some(cigar_config.pos_shift);
-		self.seq_shift = Some(cigar_config.seq_shift);
-	}
-
-	fn set_mate_cigar_shift_tn5(&mut self) {
-		let cigar_config = get_tn5shift_params(&self.mate_cigar, &!self.rev);
-		self.shifted_mate_cig = Some(cigar_config.cigar);
-		self.pos_mate_shift = Some(cigar_config.pos_shift);
-		self.seq_mate_shift = Some(cigar_config.seq_shift);
-	}
-
-	pub fn is_tn5shifted(&self) -> bool {
+	fn is_tn5shifted(&self) -> bool {
 		self.is_shifted
 	}
+
 
 	pub fn tn5shift(&self) {
 		// TODO
 	}
 
-	fn tn5_seq_shift(&self) {
-		// TODO
+	fn tn5_seq_shift(&mut self) {
+
+		if self.rev {
+			
+		}
 	} 
 
 	fn tn5_pos_shift(&self) {
@@ -104,6 +86,27 @@ impl Tn5Record {
 	}
 
 
+}
+
+#[derive(Debug)]
+struct RecordAttributes {
+	qual: Vec<u8>,
+	pos: i32,
+	qname: Vec<u8>,
+	seq: Vec<u8>,
+	mpos: i32,
+}
+
+impl RecordAttributes {
+	fn from_record(r: &rust_htslib::bam::Record) -> Self {
+		RecordAttributes {
+			qual: r.qual().to_owned(),
+			pos: r.pos(),
+			qname: r.qname().to_owned(),
+			seq: r.seq().as_bytes(),
+			mpos: r.mpos(),
+		}
+	}
 }
 
 quick_error! {

@@ -135,7 +135,7 @@ pub fn get_tn5shift_params(cs: &bam::record::CigarString, is_rev: &bool) -> Ciga
 	//CigarString(vec![Cigar::Match(35 as u32)])
 }
 
-
+#[derive(Debug)]
 pub struct CigarTrimParams {
 	pub cigar: CigarString,
 	pub seq_shift: u32,

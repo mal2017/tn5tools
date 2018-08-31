@@ -25,14 +25,16 @@ pub fn tn5shift_bam(ib: &str, ob: &str, p: usize) {
 		bam.set_threads(1).unwrap();
 		obam.set_threads(1).unwrap();
 	}
-	
-	let mut tn5_rec: tn5record::Tn5Record;
 
-	for i in bam.records() {
-		tn5_rec = tn5record::Tn5Record::from_record(i.unwrap()).unwrap();
+	let mut tn5_rec: tn5record::Tn5Record; 
+	while let Some(x) = bam.records().next() {
+		tn5_rec = tn5record::Tn5Record::from_record(x.unwrap()).unwrap();
 
-		obam.write(&tn5_rec.record()).unwrap();
 	}
+
+
+		//obam.write(&tn5_rec.inner).unwrap();
+	
 }
 
 // For details, see SAM V1 format spec.
