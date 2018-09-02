@@ -30,7 +30,7 @@ pub fn tn5shift_bam(ib: &str, ob: &str, p: usize) {
 	while let Some(x) = bam.records().next() {
 		tn5_rec = tn5record::Tn5Record::from_record(x.unwrap()).unwrap();
 		tn5_rec.tn5shift();
-		obam.write(&tn5_rec.inner).unwrap();
+		obam.write(&tn5_rec.inner);
 	}	
 }
 

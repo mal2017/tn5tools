@@ -13,7 +13,6 @@ trait Empty<T> {
 #[derive(Debug)]
 pub struct Tn5Record {
 	pub inner  : rust_htslib::bam::Record,
-	is_shifted : bool,
 	rev        : bool,
 	shifted_cigar_config: CigarTrimParams,
 	shifted_mate_cigar_config: CigarTrimParams,
@@ -29,7 +28,6 @@ impl Tn5Record {
 		let ra = RecordAttributes::from_record(&r);
 		Ok(Tn5Record{
 			inner: r,
-			is_shifted: false,
 			rev: is_rev,
 			shifted_cigar_config: get_tn5shift_params(&cigar, &is_rev),
 			shifted_mate_cigar_config: get_tn5shift_params(&mate_cigar, &!is_rev),
@@ -42,11 +40,6 @@ impl Tn5Record {
 	pub fn record(&self) -> &rust_htslib::bam::record::Record {
 		&self.inner
 	}
-
-	fn is_tn5shifted(&self) -> bool {
-		self.is_shifted
-	}
-
 
 	pub fn tn5shift(&mut self) {
 		if self.rev {
