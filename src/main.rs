@@ -15,7 +15,7 @@ extern crate csv;
 
 fn main() {
 	use clap::App;
-	use tn5tools::{profile, count, shift, tn5shift};
+	use tn5tools::{profile, count, tn5shift};
 
 	let yml = load_yaml!("cli.yml");
 	let m = App::from_yaml(yml).get_matches();
@@ -29,15 +29,7 @@ fn main() {
         count::counts(bed, &bams, threads as usize);
 	}
 
-	if let Some(m) = m.subcommand_matches("shift") {
-        // Safe to use unwrap() because of the required() option
-        let bam: &str = m.value_of("BAM").unwrap();
-        let obam: &str = m.value_of("OBAM").unwrap();
-        let threads: u32 =  m.value_of("threads").unwrap_or("1").to_string().parse().unwrap();
-        shift::shift_bam(&bam, &obam, threads as usize);
-	}
-
-		if let Some(m) = m.subcommand_matches("tn5shift") {
+	if let Some(m) = m.subcommand_matches("tn5shift") {
         // Safe to use unwrap() because of the required() option
         let bam: &str = m.value_of("BAM").unwrap();
         let obam: &str = m.value_of("OBAM").unwrap();

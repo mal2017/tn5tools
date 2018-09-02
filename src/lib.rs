@@ -15,8 +15,6 @@ pub mod count;
 
 pub mod profile;
 
-pub mod shift; // the old crappy version
-
 pub mod tn5shift;
 
 pub mod atacbam;
