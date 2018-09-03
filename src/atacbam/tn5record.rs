@@ -2,6 +2,7 @@ use rust_htslib::bam::record::{CigarString, Aux};
 use rust_htslib;
 use ::atacbam::cigar_utils::*;
 use std::collections::HashMap;
+use std::str;
 
 // Useful info: https://gist.github.com/ChrisWellsWood/84421854794037e760808d5d97d21421
 
@@ -99,7 +100,7 @@ impl RecordAttributes {
 			qual: r.qual().to_owned(),
 			insize: r.insert_size(),
 			pos: r.pos(),
-			qname: r.qname().to_owned(),
+			qname: str::from_utf8(r.qname()).unwrap().as_bytes().to_owned(),
 			seq: r.seq().as_bytes(),
 			mpos: r.mpos(),
 		}
