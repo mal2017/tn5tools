@@ -5,7 +5,6 @@ use std::collections::HashMap;
 
 // Useful info: https://gist.github.com/ChrisWellsWood/84421854794037e760808d5d97d21421
 
-
 trait Empty<T> {
 	fn empty() -> T;
 }
@@ -53,11 +52,13 @@ impl Tn5Record {
 				(self.shifted_mate_cigar_config.seq_shift + 
 					self.shifted_cigar_config.seq_shift) as i32);
 
+			
+
 			self.inner.set(&self.orig_attr.qname,
 						   &self.shifted_cigar_config.cigar,
 						   &self.orig_attr.seq[..idx].to_vec(),
 						   &self.orig_attr.qual[..idx].to_vec());
-			
+
 		} else {
 			let idx = self.shifted_cigar_config.seq_shift as usize;
 
@@ -67,11 +68,13 @@ impl Tn5Record {
 				(self.shifted_mate_cigar_config.seq_shift + 
 					self.shifted_cigar_config.seq_shift) as i32);
 
+
 			self.inner.set(&self.orig_attr.qname,
 						   &self.shifted_cigar_config.cigar,
 						   &self.orig_attr.seq[idx..].to_vec(),
 						   &self.orig_attr.qual[idx..].to_vec());
 		}
+		self.inner.set_qname(&self.orig_attr.qname); // workaround: bug in setting all mutable length data, fine if i manually reset qname
 		let new_pos = self.inner.pos();
 		let new_seqlen =  self.inner.seq().len();
 		self.inner.set_bin(reg2bin(new_pos, new_pos + new_seqlen as i32));
