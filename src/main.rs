@@ -39,7 +39,7 @@ fn main() {
 
 	if let Some(m) = m.subcommand_matches("fragsizes") {
         // Safe to use unwrap() because of the required() option
-        let bam: &str = m.value_of("BAM").unwrap();
+        let bam: Vec<&str> = m.values_of("BAM").unwrap().collect();
         let threads: u32 =  m.value_of("threads").unwrap_or("1").to_string().parse().unwrap();
         fragsizes::fragsizes(&bam, threads as usize);
 	}

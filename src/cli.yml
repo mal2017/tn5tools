@@ -48,7 +48,7 @@ subcommands:
                 help: Provide paths to 1 .bam file (does not require index)
                 required: true
                 index: 1
-                multiple: false
+                multiple: true
             - threads:
                 short: p
                 value_name: threads

@@ -15,5 +15,6 @@ serde="*"
 linear-map="1.2.0"
 itertools="*"
 quick-error="1.2.2"
+gnuplot = "0.0.26"
 
 

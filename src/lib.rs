@@ -4,9 +4,11 @@ extern crate rust_htslib;
 extern crate csv;
 extern crate rayon;
 extern crate serde;
+#[macro_use(array)]
 extern crate ndarray;
 extern crate linear_map;
 extern crate itertools;
+extern crate gnuplot;
 #[macro_use] extern crate quick_error;
 
 pub mod regions;
