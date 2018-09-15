@@ -15,7 +15,7 @@ extern crate csv;
 
 fn main() {
 	use clap::App;
-	use tn5tools::{profile, count, tn5shift};
+	use tn5tools::{profile, count, tn5shift, fragsizes};
 
 	let yml = load_yaml!("cli.yml");
 	let m = App::from_yaml(yml).get_matches();
@@ -37,6 +37,12 @@ fn main() {
         tn5shift::tn5shift_bam(&bam, &obam, threads as usize);
 	}
 
+	if let Some(m) = m.subcommand_matches("fragsizes") {
+        // Safe to use unwrap() because of the required() option
+        let bam: &str = m.value_of("BAM").unwrap();
+        let threads: u32 =  m.value_of("threads").unwrap_or("1").to_string().parse().unwrap();
+        fragsizes::fragsizes(&bam, threads as usize);
+	}
 
 	if let Some(m) = m.subcommand_matches("profile") {
 		let bam: &str = m.value_of("BAM").unwrap();

@@ -18,3 +18,5 @@ pub mod profile;
 pub mod tn5shift;
 
 pub mod atacbam;
+
+pub mod fragsizes;

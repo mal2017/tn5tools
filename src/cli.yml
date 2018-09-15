@@ -49,9 +49,9 @@ subcommands:
                 required: true
                 index: 1
                 multiple: false
-            - shift:
-                short: s
-                value_name: shift
+            - threads:
+                short: p
+                value_name: threads
 
     - tn5shift:
         about: shift all reads in a bam to reflect tn5 insertion behavior
