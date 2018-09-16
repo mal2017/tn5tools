@@ -12,11 +12,33 @@ use rayon::prelude::*;
 pub fn fragsizes(ibs: &Vec<&str>, p: usize) {
 	ThreadPoolBuilder::new().num_threads(p).build_global().unwrap();
 
-	let n = ibs.par_iter()
+	let mut sizes: Vec<Vec<i32>> = ibs.par_iter()
 			 .map(|a| get_fragsizes(a))
-			 .count();
+			 .collect();
 
-	
+	let max = sizes.par_iter()
+				   .map(|a| a.iter().count())
+				   .max()
+				   .unwrap();
+							   
+	for i in &mut sizes {
+		while i.len() < max {
+			i.push(0);
+		}
+	}
+
+	let sz_flat: Vec<i32> = sizes.into_iter().flat_map(|a| a.into_iter()).collect();
+
+	let arr = Array::from_shape_vec((ibs.len(),max), sz_flat)
+									.unwrap()
+									.reversed_axes();
+
+	println!("{:?}", arr.slice(s![..,1]));
+	let mut fg = Figure::new();
+	fg.axes2d()
+	  .lines( 0..max, arr.slice(s![..,1]), &[Caption("Proper pairs"), Color("red")]);
+	fg.set_terminal("png", "out.png");
+	fg.show();
 }
 
 
@@ -25,7 +47,7 @@ pub fn fragsizes(ibs: &Vec<&str>, p: usize) {
 fn get_fragsizes(ib: &str) -> Vec<i32> {
 	let mut bam = bam::Reader::from_path(ib).unwrap();
 	let mut bam_rec: bam::Record = bam::Record::new(); 
-	let mut tracker: HashMap<i32,i32> = HashMap::with_capacity(4000);
+	let mut tracker: HashMap<i32,i32> = HashMap::with_capacity(5000);
 	let mut size: i32;
 	let mut ct: i32;
 	while let Ok(x) = bam.read(&mut bam_rec) {
@@ -46,7 +68,7 @@ fn get_fragsizes(ib: &str) -> Vec<i32> {
 /// where n is the size of the largest fragment found.
 fn fragsize_hashmap_to_vec(h: &HashMap<i32,i32>) -> Vec<i32> {
 	let max_isize = h.keys().max().unwrap().clone();
-	let mut counts = vec![0; max_isize as usize + 1];
+	let mut counts = vec![0; max_isize as usize];
 	for i in (0..max_isize) { //sizes.iter() {
 		match h.get(&i) {
 			Some(k) => counts[i as usize] = *k,

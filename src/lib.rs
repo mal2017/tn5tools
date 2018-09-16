@@ -5,6 +5,7 @@ extern crate csv;
 extern crate rayon;
 extern crate serde;
 #[macro_use(array)]
+#[macro_use(s)]
 extern crate ndarray;
 extern crate linear_map;
 extern crate itertools;
