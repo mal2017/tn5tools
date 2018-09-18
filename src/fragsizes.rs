@@ -33,7 +33,6 @@ pub fn fragsizes(ibs: &Vec<&str>, p: usize) {
 									.unwrap()
 									.reversed_axes();
 
-	println!("{:?}", arr.slice(s![..,1]));
 	let mut fg = Figure::new();
 	fg.axes2d()
 	  .lines( 0..max, arr.slice(s![..,1]), &[Caption("Proper pairs"), Color("red")]);
