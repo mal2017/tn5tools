@@ -41,7 +41,8 @@ fn main() {
         // Safe to use unwrap() because of the required() option
         let bam: Vec<&str> = m.values_of("BAM").unwrap().collect();
         let threads: u32 =  m.value_of("threads").unwrap_or("1").to_string().parse().unwrap();
-        fragsizes::fragsizes(&bam, threads as usize);
+        let outfile: &str =  m.value_of("outfile").unwrap_or("fragsizes.csv");
+        fragsizes::write_fragsizes(&bam, threads as usize, outfile);
 	}
 
 	if let Some(m) = m.subcommand_matches("profile") {

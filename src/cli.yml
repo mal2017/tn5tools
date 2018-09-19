@@ -41,7 +41,7 @@ subcommands:
                 value_name: threads
     - fragsizes:
         about: determine fragment size distribution in pe bam
-        version: "0.0.9999"
+        version: "0.1.0"
         args:
             - BAM:
                 value_name: BAM
@@ -49,6 +49,10 @@ subcommands:
                 required: true
                 index: 1
                 multiple: true
+            - outfile:
+                help: specify path to output csv file
+                short: o
+                value_name: outfile
             - threads:
                 short: p
                 value_name: threads

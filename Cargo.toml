@@ -1,6 +1,6 @@
 [package]
 name = "tn5tools"
-version = "0.1.0"
+version = "0.0.9999"
 authors = ["mattlawlor <matt.a.lawlor@gmail.com>"]
 
 [dependencies]
@@ -15,6 +15,5 @@ serde="*"
 linear-map="1.2.0"
 itertools="*"
 quick-error="1.2.2"
-gnuplot = "0.0.26"
 
 
