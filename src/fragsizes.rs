@@ -33,12 +33,21 @@ pub fn write_fragsizes(ibs: &Vec<&str>, p: usize, of: &str) {
 	let arr = Array::from_shape_vec((ibs.len(),max), sz_flat)
 									.unwrap()
 									.reversed_axes();
+<<<<<<< HEAD
     let mut wtr = csv::Writer::from_path(of).unwrap();
     wtr.write_record(ibs).unwrap();
     for i in 0..max {
     	wtr.serialize(arr.row(i).to_vec()).unwrap();
     }
     wtr.flush().unwrap();
+=======
+
+	let mut fg = Figure::new();
+	fg.axes2d()
+	  .lines( 0..max, arr.slice(s![..,1]), &[Caption("Proper pairs"), Color("red")]);
+	fg.set_terminal("png", "out.png");
+	fg.show();
+>>>>>>> b72e031e5568bf858071efb71ee8b57a32f93a77
 }
 
 
